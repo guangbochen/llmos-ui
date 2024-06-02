@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// import { useSettings, useClusters, useUser } from '@/stores/steve'
 const route = useRouter()
 const links = [{
   label: 'Home',
@@ -13,6 +12,10 @@ const links = [{
   label: 'Model Files',
   icon: 'i-heroicons-document-text',
   to: '/modelfiles'
+}, {
+  label: 'Settings',
+  icon: 'i-heroicons-adjustments-horizontal',
+  to: '/settings'
 }]
 </script>
 
