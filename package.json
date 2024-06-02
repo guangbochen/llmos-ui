@@ -1,17 +1,45 @@
 {
-  "name": "nuxt-app",
-  "private": true,
+  "name": "llmos-ui",
   "type": "module",
+  "private": true,
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "build": "./node_modules/.bin/nuxt build",
+    "clean": "./scripts/clean",
+    "dev": "./node_modules/.bin/nuxt dev --host",
+    "generate": "./node_modules/.bin/nuxt generate",
+    "info": "./node_modules/.bin/nuxt info",
+    "lint": "./node_modules/.bin/eslint --max-warnings 0 .",
+    "lint:fix": "./node_modules/.bin/eslint --fix .",
+    "postinstall": "./node_modules/.bin/nuxt prepare",
+    "preview": "./node_modules/.bin/nuxt preview",
+    "start": "node .output/server/index.mjs",
+    "test": "./node_modules/.bin/vitest"
   },
   "dependencies": {
-    "nuxt": "^3.11.2",
-    "vue": "^3.4.27",
+    "@nuxt/ui": "2.11.1",
+    "dayjs": "^1.11.10",
+    "nuxt": "^3.8.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "2.4.5",
+    "@iconify-json/heroicons": "^1.1.21",
+    "@iconify-json/simple-icons": "^1.1.101",
+    "@nuxt/devtools": "latest",
+    "@nuxt/fonts": "^0.7.0",
+    "@nuxtjs/color-mode": "^3.3.2",
+    "@pinia/nuxt": "^0.5.1",
+    "@types/lodash-es": "^4.17.12",
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
+    "dayjs-nuxt": "^2.1.9",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.55.0",
+    "http-proxy-middleware": "^3.0.0",
+    "lodash-es": "^4.17.21",
+    "pico-emitter": "^1.2.1",
+    "sass": "^1.69.5",
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.0",
+    "vue": "3.4.27",
     "vue-router": "^4.3.2"
   }
 }
