@@ -103,13 +103,14 @@ export const MONITORING = {
 export const MANAGEMENT = {
   UPGRADE: 'management.llmos.ai.upgrade',
   SETTING: 'management.llmos.ai.setting',
-  USER: 'management.llmos.ai.user',
+  USER:    'management.llmos.ai.user',
   CLUSTER: 'management.cattle.io.cluster',
 };
 
 export const ML_LLMOS = {
-  MODEL_FILE: 'ml.llmos.ai.modelfile',
+  MODELFILE: 'ml.llmos.ai.modelfile',
 };
+
 interface TypeConfig {
   plural: string
   singular: string

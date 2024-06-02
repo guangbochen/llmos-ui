@@ -17,7 +17,6 @@ const cache: Record<string, RequestHandler> = {}
 export default function useProxy(api: string, strip = 0) {
   const key = `${ strip }-${ api }`
 
-  console.log("useProxy", key, cache[key])
   if ( !cache[key] ) {
     cache[key] = createProxy(api, strip)
   }

@@ -2,9 +2,6 @@ import { defineStore } from 'pinia'
 import { mgmtStores, useMgmt } from '@/stores/steve'
 import type { ICollection } from '@/composables/steve/types'
 
-/**
- * Represents the context store.
- */
 export const useContext = defineStore('context', {
   state: () => {
     return {
@@ -16,7 +13,6 @@ export const useContext = defineStore('context', {
     baseUrl: () => {
       let base = ''
 
-      console.log("process.server", process.server)
       if ( process.server ) {
         const headers = useRequestHeaders()
 
@@ -24,7 +20,7 @@ export const useContext = defineStore('context', {
       }
 
       base += '/v1'
-      console.log("base url", base)
+
       return base
     },
 
@@ -56,11 +52,9 @@ export const useContext = defineStore('context', {
 
       const mgmt = useMgmt()
 
-      console.log("setup mgmt url", this.baseUrl)
       mgmt.configure(this.baseUrl)
       mgmt.subscribe()
 
-      console.log("setup mgmt", mgmt)
       await mgmt.loadSchemas()
 
       const p: Promise<ICollection<any>>[] = []
