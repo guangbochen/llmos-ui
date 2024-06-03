@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { timeAgo } from '@/utils/date';
-
 const mf = useModelfiles();
 const modelfiles = await mf.findAll()
 
@@ -70,7 +68,7 @@ const filteredRows = computed(() => {
                 </template>
 
                 <template #metadata.creationTimestamp-data="{ row }">
-                    <span> {{ timeAgo(row.metadata.creationTimestamp) }} </span>
+                    <span> {{ row.timeAgo() }} </span>
                 </template>
 
                 <template #actions-data="{ row }">

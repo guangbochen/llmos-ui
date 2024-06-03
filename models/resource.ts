@@ -61,6 +61,12 @@ const Resource = {
     }
   },
 
+  timeAgo(this: DecoratedResource) {
+    return () => {
+      return dayjs(this.metadata.creationTimestamp).fromNow()
+    }
+  },
+
   pollTransitioning(this: DecoratedResource) {
     return async () => {
       if ( this.metadata.state?.transitioning || this.metadata.state?.error ) {

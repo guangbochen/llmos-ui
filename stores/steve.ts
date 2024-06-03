@@ -34,12 +34,19 @@ export const useModelfiles = defineStore('modelfiles', {
   actions: SteveTypeActions<IResource, DecoratedResource>(),
 })
 
+export const useClusters = defineStore('clusters', {
+  state:   SteveTypeState<DecoratedResource>(MANAGEMENT.CLUSTER),
+  getters: SteveTypeGetters<DecoratedResource>(),
+  actions: SteveTypeActions<IResource, DecoratedResource>(),
+})
+
 export const mgmtStores: Record<string, any> = {
   [MANAGEMENT.SETTING]: useSettings,
   [MANAGEMENT.USER]:    useUsers,
-  [MANAGEMENT.UPGRADE]:    useUpgrades,
+  [MANAGEMENT.UPGRADE]: useUpgrades,
+  [MANAGEMENT.CLUSTER]: useClusters,
   [ML_LLMOS.MODELFILE]: useModelfiles,
-}
+};
 
 export function storeFor(type: string) {
   return mgmtStores[type]
