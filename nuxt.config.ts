@@ -95,4 +95,9 @@ export default defineNuxtConfig({
       key:  'server/tls/localhost.key',
     },
   },
+
+  colorMode: { classSuffix: '' },
+  css: [
+    '@/assets/css/app.scss',
+  ],
 })

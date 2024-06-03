@@ -6,7 +6,7 @@ const links = [{
   to: '/home'
 }, {
   label: 'Users',
-  icon: 'i-heroicons-users',
+  icon: 'i-heroicons-user-group',
   to: '/users'
 }, {
   label: 'Model Files',
@@ -14,7 +14,7 @@ const links = [{
   to: '/modelfiles'
 }, {
   label: 'Settings',
-  icon: 'i-heroicons-adjustments-horizontal',
+  icon: 'i-heroicons-cog-8-tooth',
   to: '/settings'
 }]
 </script>

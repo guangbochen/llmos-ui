@@ -11,6 +11,20 @@ const columns = [
   { key: 'actions' },
 ]
 
+const q = ref('')
+const selected = ref([])
+
+const filteredRows = computed(() => {
+  if (!q.value) {
+    return settings
+  }
+
+  return settings.filter((setting) => {
+    return Object.values(setting).some((value) => {
+      return String(value).toLowerCase().includes(q.value.toLowerCase())
+    })
+  })
+})
 </script>
 
 <template>
@@ -20,20 +34,20 @@ const columns = [
             <div class="float-right">
                 <UDropdown :items="addOptions" :popper="{ placement: 'bottom-start' }">
                     <UButton icon="i-heroicons-plus" aria-label="Add" size="sm" class="mr-4">
-                        Add
+                        Create
                     </UButton>
                 </UDropdown>
             </div>
         </h1>
         <UDivider class="my-2" />
 
-        <UTable :rows="settings" v-model="selected"
-            :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No items.' }" class="w-full"
-            :columns="columns">
-
+        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
+            <UInput v-model="q" placeholder="Filter..." />
+        </div>
+        <UTable :rows="filteredRows" v-model="selected" :columns="columns">
             <template #value-data="{ row }">
                 <span v-if="row.value">
-                {{ row.id }}
+                    {{ row.id }}
                 </span>
                 <span v-else>
                     <span class="text-gray-400"></span>

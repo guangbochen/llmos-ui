@@ -1,0 +1,23 @@
+.text-bold {
+    font-weight: bold;
+}
+
+.clearfix {
+    overflow: auto;
+
+    &::after {
+        content: '';
+        clear: both;
+        display: table;
+    }
+}
+
+.search {
+    grid-area: search;
+    text-align: right;
+    justify-content: flex-end;
+}
+
+.row {
+    display: flex;
+}

@@ -32,6 +32,22 @@ async function remove(id: string) {
     await user.remove(id)
 }
 
+const q = ref('')
+
+const filteredRows = computed(() => {
+  if (!q.value) {
+    return users
+  }
+
+  return users.filter((user) => {
+    return Object.values(user).some((value) => {
+      return String(value).toLowerCase().includes(q.value.toLowerCase())
+    })
+  })
+})
+
+const selected = ref([])
+
 </script>
 
 <template>
@@ -41,14 +57,17 @@ async function remove(id: string) {
             <div class="float-right">
                 <UDropdown :items="addOptions" :popper="{ placement: 'bottom-start' }">
                     <UButton icon="i-heroicons-plus" aria-label="Add" size="sm" class="mr-4">
-                        Add
+                        Create
                     </UButton>
                 </UDropdown>
             </div>
         </h1>
         <UDivider class="my-2" />
 
-        <UTable :rows="users" :columns="columns">
+        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
+            <UInput v-model="q" placeholder="Filter..." />
+        </div>
+        <UTable :rows="filteredRows" :columns="columns" v-model="selected">
             <template #metadata.state.name-data="{ row }">
                 <UBadge :label="row.metadata.state.name"
                     :color="row.metadata.state.error === false ? 'green' : row.metadata.state.transitioning === true ? 'orange' : 'red'"
