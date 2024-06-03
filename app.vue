@@ -1,47 +1,36 @@
+<script setup lang="ts">
+useHead({
+  meta: [
+    { charset: 'utf-8' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+  ],
+  link: [
+    { rel: 'icon', href: '/favicon.ico' }
+  ],
+  htmlAttrs: {
+    lang: 'en'
+  }
+})
+
+const title = 'LLMOS - Dashboard'
+const description = 'LLMOS Dashboard helps to manage LLM as an OS'
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
+</script>
+
 <template>
-  <div class="root bg-llmos-100 dark:bg-llmos-950">
-    <nav class="bg-llmos-200 dark:bg-llmos-900">
-      <LeftNav />
-    </nav>
-    <aside class="bg-llmos-200 dark:bg-llmos-900">
-      <ThemeToggle />
-    </aside>
-    <main>
+  <div class="root">
+    <NuxtLoadingIndicator />
+    <NuxtLayout>
       <NuxtPage />
-    </main>
+    </NuxtLayout>
   </div>
 </template>
 
 <style lang="scss" scoped>
-  .root {
-    --nav-width: 300px;
-    --aside-height: 50px;
-
-    display: grid;
-    grid-template-areas: "nav main"
-                         "aside main";
-    grid-template-columns: var(--nav-width) 1fr;
-    grid-template-rows: 1fr var(--aside-height);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    NAV {
-      grid-area: nav;
-      overflow: auto;
-    }
-
-    ASIDE {
-      grid-area: aside;
-      line-height: var(--aside-height);
-    }
-
-    MAIN {
-      grid-area: main;
-      overflow: auto;
-      position: relative;
-    }
-  }
 </style>

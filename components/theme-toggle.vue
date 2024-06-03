@@ -12,7 +12,7 @@ const isDark = computed({
 })
 </script>
 
-<template>
+<template class="gap-3">
   <ClientOnly>
     <UButton
       :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"

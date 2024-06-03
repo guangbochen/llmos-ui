@@ -30,18 +30,27 @@ export default defineNuxtConfig({
   components: true,
   ssr: false,
   modules: [
-    '@nuxt/ui',
-    '@pinia/nuxt',
-    'dayjs-nuxt'
+    "@nuxt/ui",
+    "@pinia/nuxt",
+    "@nuxt/fonts",
+    "dayjs-nuxt",
   ],
+  ui: {
+    icons: ["heroicons", "simple-icons"],
+    safelistColors: ["primary", "red", "orange", "green"],
+  },
+  colorMode: {
+    disableTransition: true,
+    classSuffix: "",
+  },
   alias: {
-    "@config": './config',
-    "@utils": './utils',
+    "@config": "./config",
+    "@utils": "./utils",
   },
 
   runtimeConfig: {
     public: {
-      api: process.env.NUXT_PUBLIC_API || '/v1',
+      api: process.env.NUXT_PUBLIC_API || "/v1",
     },
   },
 
@@ -52,38 +61,36 @@ export default defineNuxtConfig({
   sourcemap: true,
 
   vite: {
-    build:   {
-      manifest:      true,
-      ssrManifest:   true,
-      sourcemap:     true,
+    build: {
+      manifest: true,
+      ssrManifest: true,
+      sourcemap: true,
       rollupOptions: {
         output: {
-          sourcemap:    true,
+          sourcemap: true,
         },
       },
     },
-    css:     {
+    css: {
       devSourcemap: true,
     },
 
-    plugins: [
-      basicSsl(),
-    ],
+    plugins: [basicSsl()],
 
     server: {
       https: {
-        cert: 'server/tls/localhost.crt',
-        key:  'server/tls/localhost.key',
+        cert: "server/tls/localhost.crt",
+        key: "server/tls/localhost.key",
       },
 
       middlewareMode: true,
 
-      hmr:   {
-        overlay:    false,
-        protocol:   ssl ? 'wss' : 'ws',
-        port:       hmrPort,
+      hmr: {
+        overlay: false,
+        protocol: ssl ? "wss" : "ws",
+        port: hmrPort,
         clientPort: hmrPort,
-        server:     hmrServer,
+        server: hmrServer,
       },
     },
   },
@@ -91,13 +98,10 @@ export default defineNuxtConfig({
   devServer: {
     port,
     https: {
-      cert: 'server/tls/localhost.crt',
-      key:  'server/tls/localhost.key',
+      cert: "server/tls/localhost.crt",
+      key: "server/tls/localhost.key",
     },
   },
 
-  colorMode: { classSuffix: '' },
-  css: [
-    '@/assets/css/app.scss',
-  ],
-})
+  css: ["@/assets/css/app.scss"],
+});

@@ -41,8 +41,7 @@ const filteredRows = computed(() => {
         footer: { padding: 'p-4' }
     }">
         <div class="p-5">
-            <!-- <h1 class="text-2xl"> -->
-            <h1 class="font-semibold text-xl text-gray-900 dark:text-white leading-tight">
+            <h1 class="font-semibold text-xl text-gray-900 dark:text-white leading-tight py-2">
                 Model Files
                 <div class="float-right">
                     <UDropdown :popper="{ placement: 'bottom-start' }">
@@ -54,14 +53,10 @@ const filteredRows = computed(() => {
             </h1>
             <UDivider class="my-2" />
 
-            <!-- <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-                <UInput v-model="q" placeholder="Filter..." />
-            </div> -->
             <!-- Filters -->
             <div class="flex items-center gap-3 px-4 py-3">
-                <UButton icon="i-heroicons-arrow-down-tray" label="Download YAML" color="white" />
-                <UButton icon="i-heroicons-trash" label="Delete" color="white" />
-                <UInput v-model="q" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Filter..." class="search row" />
+                <UInput v-model="q" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Filter..."
+                    class="search row" />
             </div>
 
             <!-- Table -->

@@ -52,7 +52,7 @@ const selected = ref([])
 
 <template>
     <div class="p-5">
-        <h1 class="text-2xl">
+        <h1 class="font-semibold text-xl text-gray-900 dark:text-white leading-tight py-2">
             Users
             <div class="float-right">
                 <UDropdown :items="addOptions" :popper="{ placement: 'bottom-start' }">
@@ -64,9 +64,12 @@ const selected = ref([])
         </h1>
         <UDivider class="my-2" />
 
-        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-            <UInput v-model="q" placeholder="Filter..." />
+        <!-- Filters -->
+        <div class="flex items-center gap-3 px-4 py-3">
+            <UInput v-model="q" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Filter..."
+                class="search row" />
         </div>
+
         <UTable :rows="filteredRows" :columns="columns" v-model="selected">
             <template #metadata.state.name-data="{ row }">
                 <UBadge :label="row.metadata.state.name"

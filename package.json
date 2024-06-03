@@ -21,8 +21,10 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "2.4.5",
-    "@heroicons/vue": "^2.0.18",
+    "@iconify-json/heroicons": "^1.1.21",
+    "@iconify-json/simple-icons": "^1.1.101",
     "@nuxt/devtools": "latest",
+    "@nuxt/fonts": "^0.7.0",
     "@nuxtjs/color-mode": "^3.3.2",
     "@pinia/nuxt": "^0.5.1",
     "@types/lodash-es": "^4.17.12",
