@@ -1,14 +1,6 @@
-import { fromArray } from '@/utils/array'
-// import { MANAGEMENT, ML_LLMOS } from './types'
-// export const SETTING = 'management.llmos.ai.setting'
-// export const USER = 'management.llmos.ai.user'
-// export const MODELFILE = 'ml.llmos.ai.modelfile'
-// export const CLUSTER = 'management.cattle.io.cluster'
-
-// export const NAMESPACE = 'namespace'
-// export const SCHEMA = 'schema'
-
 // Adapted from: https://github.com/rancher/dashboard
+import { fromArray } from '@/utils/array'
+
 // Steve types
 // base: /v1
 export const STEVE = { PREFERENCE: 'userpreference' };
@@ -39,9 +31,9 @@ export const STORAGE_CLASS = 'storage.k8s.io.storageclass';
 export const OBJECT_META = 'io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta';
 
 export const RBAC = {
-  ROLE:                 'rbac.authorization.k8s.io.role',
-  CLUSTER_ROLE:         'rbac.authorization.k8s.io.clusterrole',
-  ROLE_BINDING:         'rbac.authorization.k8s.io.rolebinding',
+  ROLE: 'rbac.authorization.k8s.io.role',
+  CLUSTER_ROLE: 'rbac.authorization.k8s.io.clusterrole',
+  ROLE_BINDING: 'rbac.authorization.k8s.io.rolebinding',
   CLUSTER_ROLE_BINDING: 'rbac.authorization.k8s.io.clusterrolebinding',
 };
 
@@ -49,12 +41,12 @@ export const WORKLOAD = 'workload';
 
 // The types that are aggregated into a "workload"
 export const WORKLOAD_TYPES = {
-  DEPLOYMENT:             'apps.deployment',
-  CRON_JOB:               'batch.cronjob',
-  DAEMON_SET:             'apps.daemonset',
-  JOB:                    'batch.job',
-  STATEFUL_SET:           'apps.statefulset',
-  REPLICA_SET:            'apps.replicaset',
+  DEPLOYMENT: 'apps.deployment',
+  CRON_JOB: 'batch.cronjob',
+  DAEMON_SET: 'apps.daemonset',
+  JOB: 'batch.job',
+  STATEFUL_SET: 'apps.statefulset',
+  REPLICA_SET: 'apps.replicaset',
   REPLICATION_CONTROLLER: 'replicationcontroller'
 };
 
@@ -66,32 +58,7 @@ export const SCALABLE_WORKLOAD_TYPES = scalableWorkloads;
 
 export const METRIC = {
   NODE: 'metrics.k8s.io.nodemetrics',
-  POD:  'metrics.k8s.io.podmetrics',
-};
-
-export const MONITORING = {
-  ALERTMANAGER:       'monitoring.coreos.com.alertmanager',
-  ALERTMANAGERCONFIG: 'monitoring.coreos.com.alertmanagerconfig',
-  PODMONITOR:         'monitoring.coreos.com.podmonitor',
-  PROMETHEUS:         'monitoring.coreos.com.prometheus',
-  PROMETHEUSRULE:     'monitoring.coreos.com.prometheusrule',
-  SERVICEMONITOR:     'monitoring.coreos.com.servicemonitor',
-  THANOSRULER:        'monitoring.coreos.com.thanosruler',
-  SPOOFED:            {
-    RECEIVER:                         'monitoring.coreos.com.receiver',
-    RECEIVER_SPEC:                    'monitoring.coreos.com.receiver.spec',
-    RECEIVER_EMAIL:                   'monitoring.coreos.com.receiver.email',
-    RECEIVER_SLACK:                   'monitoring.coreos.com.receiver.slack',
-    RECEIVER_WEBHOOK:                 'monitoring.coreos.com.receiver.webhook',
-    RECEIVER_PAGERDUTY:               'monitoring.coreos.com.receiver.pagerduty',
-    RECEIVER_OPSGENIE:                'monitoring.coreos.com.receiver.opsgenie',
-    RECEIVER_HTTP_CONFIG:             'monitoring.coreos.com.receiver.httpconfig',
-    RESPONDER:                        'monitoring.coreos.com.receiver.responder',
-    ROUTE:                            'monitoring.coreos.com.route',
-    ROUTE_SPEC:                       'monitoring.coreos.com.route.spec',
-    ALERTMANAGERCONFIG_RECEIVER_SPEC: 'monitoring.coreos.com.v1alpha1.alertmanagerconfig.spec.receivers',
-    ALERTMANAGERCONFIG_ROUTE_SPEC:    'monitoring.coreos.com.v1alpha1.alertmanagerconfig.spec.route'
-  }
+  POD: 'metrics.k8s.io.podmetrics',
 };
 
 // --------------------------------------
@@ -100,15 +67,16 @@ export const MONITORING = {
 
 // Management API (via steve)
 // Base: /v1
-export const MANAGEMENT = {
-  UPGRADE: 'management.llmos.ai.upgrade',
-  SETTING: 'management.llmos.ai.setting',
-  USER:    'management.llmos.ai.user',
-  CLUSTER: 'management.cattle.io.cluster',
-};
-
-export const ML_LLMOS = {
-  MODELFILE: 'ml.llmos.ai.modelfile',
+export const LLMOS = {
+  MANAGEMENT: {
+    UPGRADE: 'management.llmos.ai.upgrade',
+    SETTING: 'management.llmos.ai.setting',
+    USER: 'management.llmos.ai.user',
+    CLUSTER: 'management.cattle.io.cluster',
+  },
+  ML: {
+    MODELFILE: 'ml.llmos.ai.modelfile',
+  }
 };
 
 interface TypeConfig {
@@ -129,33 +97,11 @@ interface TypeConfig {
 /**
  * Configuration object that maps keys to `TypeConfig` objects.
  */
-const config: Record<string, TypeConfig> = {
-  [MANAGEMENT.SETTING]: {
-    plural:      'settings',
-    singular:    'setting',
-    defaultSort: 'metadata.creationTimestamp',
-  },
-  [MANAGEMENT.USER]: {
-    plural:      'users',
-    singular:    'user',
-    defaultSort: 'metadata.creationTimestamp',
-  },
-  [MANAGEMENT.CLUSTER]: {
-    plural:      'clusters',
-    singular:    'cluster',
-    defaultSort: 'metadata.creationTimestamp',
-    // defaultSort: 'id',
-  },
-  [ML_LLMOS.MODEL_FILE]: {
-    plural:      'modelfiles',
-    singular:    'modelfile',
-    defaultSort: 'metadata.creationTimestamp',
-  },
-}
+const config: Record<string, TypeConfig> = {}
 
 const reverse: Record<string, string> = {}
 
-for ( const k of Object.keys(config) ) {
+for (const k of Object.keys(config)) {
   reverse[config[k].plural] = k
   reverse[config[k].singular] = k
 }
@@ -163,28 +109,28 @@ for ( const k of Object.keys(config) ) {
 export function toNice(apiType: string, singular = false): string {
   let out: string
 
-  if ( singular ) {
+  if (singular) {
     out = config[apiType]?.singular
   } else {
     out = config[apiType]?.plural
   }
 
-  if ( out ) {
+  if (out) {
     return out
   }
 
-  throw new Error(`Unmapped type: ${ apiType }`)
+  throw new Error(`Unmapped type: ${apiType}`)
 }
 
 export function fromNice(nice: string | string[]): string {
   nice = fromArray(nice)
   const out = reverse[nice]
 
-  if ( out ) {
+  if (out) {
     return out
   }
 
-  throw new Error(`Unmapped reverse type: ${ nice }`)
+  throw new Error(`Unmapped reverse type: ${nice}`)
 }
 
 export function pollTransitioning(type: string) {
@@ -214,9 +160,9 @@ export function preloadable(type: string) {
 export function detailRoute(type: string, resource: DecoratedResource) {
   const override = config[type]?.detailRoute
 
-  if ( typeof override === 'function' ) {
+  if (typeof override === 'function') {
     return override(resource)
-  } else if ( override ) {
+  } else if (override) {
     return override
   } else {
     throw new Error('No detail route')
@@ -224,7 +170,7 @@ export function detailRoute(type: string, resource: DecoratedResource) {
 }
 
 export function defaultSort(type: string) {
-  if ( typeof config[type]?.defaultSort === 'undefined' ) {
+  if (typeof config[type]?.defaultSort === 'undefined') {
     return 'nameSort'
   }
 

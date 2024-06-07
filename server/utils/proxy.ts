@@ -40,7 +40,7 @@ function createProxy(api: string, strip = 0) {
     ws:              true,
 
     onProxyReq(proxyReq, req, res) {
-      if ( !req.headers.reqid ) {
+      if ( !req.headers?.reqid ) {
         req.headers.reqid = randomStr()
         res.setHeader('reqid', req.headers.reqid)
       }

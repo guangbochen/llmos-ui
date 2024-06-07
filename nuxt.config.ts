@@ -40,7 +40,7 @@ export default defineNuxtConfig({
     safelistColors: ["primary", "red", "orange", "green"],
   },
   colorMode: {
-    disableTransition: true,
+    // disableTransition: true,
     classSuffix: "",
   },
   alias: {
@@ -54,7 +54,7 @@ export default defineNuxtConfig({
     },
   },
 
-  experimental: { reactivityTransform: true },
+  // experimental: { reactivityTransform: true },
   nitro: { sourceMap: true },
   typescript: { strict: true },
 

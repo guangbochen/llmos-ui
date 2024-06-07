@@ -13,10 +13,13 @@ export function isArray(ary: any): boolean {
 export function removeObject<T>(ary: T[], obj: T): T[] {
   const idx = ary.indexOf(obj)
 
+  console.log('idx', idx)
+
   if (idx >= 0) {
     ary.splice(idx, 1)
   }
 
+  console.log('ary', ary)
   return ary
 }
 

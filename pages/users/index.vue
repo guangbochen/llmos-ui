@@ -1,6 +1,8 @@
 <script setup lang="ts">
-const user = useUsers();
-const users = await user.findAll()
+import { LLMOS } from '@/config/schemas';
+const mgmt = useManagementStore();
+const users = await mgmt.findAll(LLMOS.MANAGEMENT.USER)
+console.log("debug 123:---", users)
 
 const columns = [
     { key: 'metadata.state.name', label: 'State', sortable: true },
@@ -68,7 +70,7 @@ const selected = ref([])
                 class="search row" />
         </div>
 
-        <UTable :rows="filteredRows" :columns="columns" v-model="selected">
+        <UTable :rows="users" :columns="columns" v-model="selected">
             <template #metadata.state.name-data="{ row }">
                 <UBadge :label="row.metadata.state.name"
                     :color="row.metadata.state.error === false ? 'green' : row.metadata.state.transitioning === true ? 'orange' : 'red'"

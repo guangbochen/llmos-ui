@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
-import { mgmtStores, useMgmt } from '@/stores/steve'
+import { defineStore } from "pinia";
+import { useManagementStore } from "@/stores/steve";
 import type { ICollection } from '@/composables/steve/types'
 
-export const useContext = defineStore('context', {
+export const useContext = defineStore("context", {
   state: () => {
     return {
       mgmtSetup: false,
-    }
+    };
   },
 
   getters: {
@@ -43,19 +43,17 @@ export const useContext = defineStore('context', {
   },
 
   actions: {
-    async setupMgmt() {
-      if ( this.mgmtSetup ) {
-        return
+    async loadManagement() {
+      if (this.mgmtSetup) {
+        return;
       }
 
-      this.mgmtSetup = true
-
-      const mgmt = useMgmt()
-
+      this.mgmtSetup = true;
+      const mgmt = useManagementStore();
       mgmt.configure(this.baseUrl)
       mgmt.subscribe()
 
-      await mgmt.loadSchemas()
+      await mgmt.loadSchemas();
 
       const p: Promise<ICollection<any>>[] = []
 
@@ -67,5 +65,5 @@ export const useContext = defineStore('context', {
 
       await Promise.all(p)
     },
-  }
-})
+  },
+});

@@ -1,22 +1,4 @@
 <script setup lang="ts">
-
-const links = [{
-  label: 'Home',
-  icon: 'i-heroicons-home',
-  to: '/home'
-}, {
-  label: 'Users',
-  icon: 'i-heroicons-user-group',
-  to: '/users'
-}, {
-  label: 'Model Files',
-  icon: 'i-heroicons-document-text',
-  to: '/modelfiles'
-}, {
-  label: 'Settings',
-  icon: 'i-heroicons-cog-8-tooth',
-  to: '/settings'
-}]
 </script>
 
 <template>

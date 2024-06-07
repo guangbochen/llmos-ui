@@ -5,25 +5,16 @@ import omitBy from 'lodash-es/omitBy.js'
 import pickBy from 'lodash-es/pickBy.js'
 import dayjs from 'dayjs'
 import { removeAt } from '@/utils/array'
-
-// import { downloadFile, generateZip } from '@/utils/download'
-// import { eachLimit } from '@/utils/promise'
-// import type { JsonDict, JsonValue } from '@/utils/object'
 import type { JsonValue } from '@/utils/object'
 import { clone } from '@/utils/object'
 import { sortableNumericSuffix } from '@/utils/sort'
-
 import type { IAction, IAnnotations, ILabels, IResource } from '@/composables/steve/types'
-
-// import type { IRequestOpt } from '@/composables/steve/server'
-// import { useContext } from '@/stores/context'
-// import { toNice } from '@/config/schemas'
-import type { SteveStoreType } from '@/stores/steve'
+import type { MgmtStoreType } from '@/stores/steve'
 import {
   detailRoute, details, editable, loadAfterSave, toNice,
 } from '@/config/schemas'
 import { colorForState, labelForState, sortableForState } from '@/utils/resource-state'
-import type { IRequestOpt } from '@/composables/steve/server'
+import type { IRequestOpt} from '@/composables/steve/server'
 import decorate from '@/composables/steve/decorate'
 import { matchesSomeRegex } from '@/utils/string'
 import { ANNOTATIONS_TO_IGNORE_REGEX, LABELS_TO_IGNORE_REGEX } from '@/config/labels-annotations'
@@ -32,12 +23,11 @@ import { cleanForDiff } from '@/composables/steve/normalize'
 export type UnComputed<T> = T extends ComputedRef<infer U> ? U : T
 
 type IDecoratedResource = {
-  // [k in keyof typeof Resource]: ReturnType<typeof Resource[k]>
   [k in keyof typeof Resource]: ReturnType<typeof Resource[k]>
 }
 
 declare global {
-  export interface DecoratedResource extends IResource, IDecoratedResource {}
+  export interface DecoratedResource extends IResource, IDecoratedResource { }
 }
 
 const Resource = {
@@ -55,7 +45,7 @@ const Resource = {
     }
   },
 
-  refresh(this: DecoratedResource, store: SteveStoreType) {
+  refresh(this: DecoratedResource, store: MgmtStoreType) {
     return async () => {
       return store.find(this.id, { force: true })
     }
@@ -69,7 +59,7 @@ const Resource = {
 
   pollTransitioning(this: DecoratedResource) {
     return async () => {
-      if ( this.metadata.state?.transitioning || this.metadata.state?.error ) {
+      if (this.metadata.state?.transitioning || this.metadata.state?.error) {
         await usleep(5000)
         await this.refresh()
         // Refresh will trigger a load which re-calls this if it's still transitioning…
@@ -79,7 +69,7 @@ const Resource = {
 
   update(this: DecoratedResource) {
     return (neu: JsonValue) => {
-      for ( const k of Object.keys(this) ) {
+      for (const k of Object.keys(this)) {
         Object.defineProperty(this, k, { configurable: true, enumerable: true, value: undefined })
       }
 
@@ -91,37 +81,37 @@ const Resource = {
     }
   },
 
-  save(this: DecoratedResource, store: SteveStoreType) {
+  save(this: DecoratedResource, store: MgmtStoreType) {
     return async (opt: IRequestOpt = {}) => {
       const forNew = !this.id
 
-      if ( !opt.url ) {
-        if ( forNew ) {
+      if (!opt.url) {
+        if (forNew) {
           const schema = store.schema
 
           opt.url = schema.linkFor('collection')
 
-          if ( schema.attributes?.namespaced && this.metadata?.namespace ) {
-            opt.url += `/${ this.metadata.namespace }`
+          if (schema.attributes?.namespaced && this.metadata?.namespace) {
+            opt.url += `/${this.metadata.namespace}`
           }
         } else {
           opt.url = this.linkFor('update') || this.linkFor('self')
         }
       }
 
-      if ( !opt.method ) {
-        opt.method = ( forNew ? 'post' : 'put' )
+      if (!opt.method) {
+        opt.method = (forNew ? 'post' : 'put')
       }
 
-      if ( !opt.headers ) {
+      if (!opt.headers) {
         opt.headers = {}
       }
 
-      if ( !opt.headers['content-type'] ) {
+      if (!opt.headers['content-type']) {
         opt.headers['content-type'] = 'application/json'
       }
 
-      if ( !opt.headers.accept ) {
+      if (!opt.headers.accept) {
         opt.headers.accept = 'application/json'
       }
 
@@ -132,12 +122,12 @@ const Resource = {
 
         this.update(res)
 
-        if ( forNew && loadAfterSave(this.type) ) {
-          if ( store.map[this.id] ) {
+        if (forNew && loadAfterSave(this.type)) {
+          if (store.map[this.id]) {
             // With really unlucky timing the websocket create event might
             // see the resource and add a copy before we have a change to add it here.
             // If this happens, drop that copy and use this one.
-            console.error(`Warning: Newly created ${ this.type } ${ this.id } is already in the store`)
+            console.error(`Warning: Newly created ${this.type} ${this.id} is already in the store`)
             removeObject(store.list, store.map[this.id])
             delete store.map[this.id]
           }
@@ -148,7 +138,7 @@ const Resource = {
 
         // console.info('### Resource Save', this.type, this.id)
       } catch (e: any) {
-        if ( opt.retry !== 0 && this.type && this.id && this.__original && e.status === 409) {
+        if (opt.retry !== 0 && this.type && this.id && this.__original && e.status === 409) {
           // If there's a conflict, try to load the new version
           const fromServer = await store.find(this.id, { force: true })
 
@@ -163,7 +153,7 @@ const Resource = {
           console.info('Server Change', serverChange)
           console.info('User Change', userChange)
 
-          if ( conflicts.length ) {
+          if (conflicts.length) {
             console.error('Conflicts', conflicts)
 
             return Promise.reject(e)
@@ -193,7 +183,7 @@ const Resource = {
     return computed(() => {
       const name = unref(this.nameDisplay) as string
 
-      return `${ sortableNumericSuffix(this.metadata.namespace!) }/${ sortableNumericSuffix(name).toLowerCase() }`
+      return `${sortableNumericSuffix(this.metadata.namespace!)}/${sortableNumericSuffix(name).toLowerCase()}`
     })
   },
 
@@ -202,11 +192,11 @@ const Resource = {
   // -------------------------------
   state(this: DecoratedResource) {
     return computed((): string => {
-      if ( !this.id ) {
+      if (!this.id) {
         return ''
       }
 
-      if ( this.metadata?.deletionTimestamp ) {
+      if (this.metadata?.deletionTimestamp) {
         return 'removing'
       }
 
@@ -274,7 +264,7 @@ const Resource = {
 
   stateDetail(this: DecoratedResource) {
     return computed(() => {
-      if ( this.metadata.state?.transitioning || this.metadata.state?.error ) {
+      if (this.metadata.state?.transitioning || this.metadata.state?.error) {
         return this.metadata.state.message || ''
       }
 
@@ -288,21 +278,21 @@ const Resource = {
 
   isCondition(this: DecoratedResource) {
     return (condition: string, withStatus: string | null = 'True') => {
-      if ( !this.status || !this.status.conditions ) {
+      if (!this.status || !this.status.conditions) {
         return false
       }
 
       const entry = findBy((this.status.conditions || []), 'type', condition)
 
-      if ( !entry ) {
+      if (!entry) {
         return false
       }
 
-      if ( !withStatus ) {
+      if (!withStatus) {
         return true
       }
 
-      return (entry.status || '').toLowerCase() === `${ withStatus }`.toLowerCase()
+      return (entry.status || '').toLowerCase() === `${withStatus}`.toLowerCase()
     }
   },
 
@@ -319,7 +309,7 @@ const Resource = {
     return (name: string) => {
       let out = (this.links || {})[name]
 
-      if ( out && out.startsWith('http://localhost') ) {
+      if (out && out.startsWith('http://localhost')) {
         out = out.replace(/^http/, 'https')
       }
 
@@ -345,34 +335,34 @@ const Resource = {
     }
   },
 
-  followLink(this: DecoratedResource, store: SteveStoreType) {
+  followLink(this: DecoratedResource, store: MgmtStoreType) {
     return (linkName: string, opt: IRequestOpt = {}) => {
-      if ( !opt.url ) {
+      if (!opt.url) {
         opt.url = this.linkFor(linkName)
       }
 
-      if ( !opt.url ) {
-        throw new Error(`Unknown link ${ linkName } on ${ this.type } ${ this.id }`)
+      if (!opt.url) {
+        throw new Error(`Unknown link ${linkName} on ${this.type} ${this.id}`)
       }
 
       return store.server.request(opt)
     }
   },
 
-  serverAction(this: DecoratedResource, store: SteveStoreType) {
+  serverAction(this: DecoratedResource, store: MgmtStoreType) {
     return (actionName: string, body: JsonValue = {}, opt: IRequestOpt = {}) => {
-      if ( !opt.url ) {
+      if (!opt.url) {
         opt.url = (this.actions || {})[actionName]
       }
 
-      if ( !opt.method ) {
+      if (!opt.method) {
         opt.method = 'POST'
       }
 
       opt.body = body
 
-      if ( !opt.url ) {
-        throw new Error(`Unknown action ${ actionName } on ${ this.type } ${ this.id }`)
+      if (!opt.url) {
+        throw new Error(`Unknown action ${actionName} on ${this.type} ${this.id}`)
       }
 
       return store.server.request(opt)
@@ -404,7 +394,7 @@ const Resource = {
 
   getLabel(this: DecoratedResource) {
     return (key: string) => {
-      if ( !this.metadata?.labels ) {
+      if (!this.metadata?.labels) {
         return undefined
       }
 
@@ -414,7 +404,7 @@ const Resource = {
 
   setLabels(this: DecoratedResource) {
     return (val: ILabels) => {
-      if ( !this.metadata ) {
+      if (!this.metadata) {
         this.metadata = {}
       }
 
@@ -424,17 +414,17 @@ const Resource = {
 
   setLabel(this: DecoratedResource) {
     return (key: string, val: string | null | undefined) => {
-      if ( typeof val === 'string' ) {
-        if ( !this.metadata ) {
+      if (typeof val === 'string') {
+        if (!this.metadata) {
           this.metadata = {}
         }
 
-        if ( !this.metadata.labels ) {
+        if (!this.metadata.labels) {
           this.metadata.labels = {}
         }
 
         this.metadata.labels[key] = <string>val
-      } else if ( this.metadata?.labels ) {
+      } else if (this.metadata?.labels) {
         delete this.metadata.labels[key]
       }
     }
@@ -465,7 +455,7 @@ const Resource = {
 
   getAnnotation(this: DecoratedResource) {
     return (key: string) => {
-      if ( !this.metadata?.annotations ) {
+      if (!this.metadata?.annotations) {
         return undefined
       }
 
@@ -475,7 +465,7 @@ const Resource = {
 
   setAnnotations(this: DecoratedResource) {
     return (val: IAnnotations) => {
-      if ( !this.metadata ) {
+      if (!this.metadata) {
         this.metadata = {}
       }
 
@@ -485,17 +475,17 @@ const Resource = {
 
   setAnnotation(this: DecoratedResource) {
     return (key: string, val: string | null | undefined) => {
-      if ( typeof val === 'string' ) {
-        if ( !this.metadata ) {
+      if (typeof val === 'string') {
+        if (!this.metadata) {
           this.metadata = {}
         }
 
-        if ( !this.metadata.annotations ) {
+        if (!this.metadata.annotations) {
           this.metadata.annotations = {}
         }
 
         this.metadata.annotations[key] = <string>val
-      } else if ( this.metadata?.annotations ) {
+      } else if (this.metadata?.annotations) {
         delete this.metadata.annotations[key]
       }
     }
@@ -505,7 +495,7 @@ const Resource = {
   // Action List
   // -------------------------------
   canRemove(this: DecoratedResource) {
-    return computed(() => <boolean> this.hasLink('remove'))
+    return computed(() => <boolean>this.hasLink('remove'))
   },
 
   confirmRemove(this: DecoratedResource) {
@@ -517,18 +507,18 @@ const Resource = {
   },
 
   canDetail(this: DecoratedResource) {
-    return computed(() => <boolean> details(this.type) && this.hasLink('self'))
+    return computed(() => <boolean>details(this.type) && this.hasLink('self'))
   },
 
   canUpdate(this: DecoratedResource) {
-    return computed(() => <boolean> editable(this.type) && this.hasLink('update'))
+    return computed(() => <boolean>editable(this.type) && this.hasLink('update'))
   },
 
   canYaml(this: DecoratedResource) {
-    return computed(() => <boolean> this.hasLink('view'))
+    return computed(() => <boolean>this.hasLink('view'))
   },
 
-  availableActions(this: DecoratedResource, store: SteveStoreType) {
+  availableActions(this: DecoratedResource, store: MgmtStoreType) {
     return computed(() => {
       const canCreate = unref(store.schema.canCreate)
       const canUpdate = unref(this.canUpdate)
@@ -541,9 +531,9 @@ const Resource = {
       const all: IAction[] = [
         { divider: true },
         {
-          action:  'goToEdit',
-          label:   'Edit',
-          icon:    'edit',
+          action: 'goToEdit',
+          label: 'Edit',
+          icon: 'edit',
           enabled: canUpdate,
         },
         // {
@@ -553,10 +543,10 @@ const Resource = {
         //   enabled: canYaml && (canUpdate || canDetail),
         // },
         {
-          action:  'goToClone',
-          label:   'Clone',
-          icon:    'copy',
-          enabled:  canClone && canCreate,
+          action: 'goToClone',
+          label: 'Clone',
+          icon: 'copy',
+          enabled: canClone && canCreate,
         },
         { divider: true },
         // {
@@ -569,20 +559,20 @@ const Resource = {
         //   weight:     -9,
         // },
         {
-          action:  'viewInApi',
-          label:   'View in API',
-          icon:    'api-1',
-          enabled:  isDev && this.hasLink('self'),
+          action: 'viewInApi',
+          label: 'View in API',
+          icon: 'api-1',
+          enabled: isDev && this.hasLink('self'),
         },
         {
-          action:     'remove',
-          confirm:    confirmRemove ? () => `Are you sure you want to remove '${ this.nameDisplay }'?` : false,
-          label:      'Remove',
-          icon:       'trash-can',
-          bulkable:   true,
-          enabled:    canRemove,
+          action: 'remove',
+          confirm: confirmRemove ? () => `Are you sure you want to remove '${this.nameDisplay}'?` : false,
+          label: 'Remove',
+          icon: 'trash-can',
+          bulkable: true,
+          enabled: canRemove,
           bulkAction: 'promptRemove',
-          weight:     -10, // Delete always goes last
+          weight: -10, // Delete always goes last
         },
       ]
 
@@ -598,7 +588,7 @@ const Resource = {
       let last = false
 
       const out = all.filter((item) => {
-        if ( item.enabled === false ) {
+        if (item.enabled === false) {
           return false
         }
 
@@ -611,18 +601,18 @@ const Resource = {
       })
 
       // Remove dividers at the beginning
-      while ( out.length && out[0].divider ) {
+      while (out.length && out[0].divider) {
         out.shift()
       }
 
       // Remove dividers at the end
-      while ( out.length && out[out.length - 1].divider ) {
+      while (out.length && out[out.length - 1].divider) {
         out.pop()
       }
 
       // Remove consecutive dividers in the middle
-      for ( let i = 1; i < out.length; i++ ) {
-        if ( out[i].divider && out[i - 1].divider ) {
+      for (let i = 1; i < out.length; i++) {
+        if (out[i].divider && out[i - 1].divider) {
           removeAt(out, i, 1)
           i--
         }
@@ -637,7 +627,7 @@ const Resource = {
   // -------------------------------
   doAction(this: DecoratedResource) {
     return (action: string, ...rest: any[]) => {
-      if ( typeof this[action] === 'function' ) {
+      if (typeof this[action] === 'function') {
         this[action](...rest)
       }
     }
@@ -655,9 +645,9 @@ const Resource = {
     }
   },
 
-  remove(this: DecoratedResource, store: SteveStoreType) {
+  remove(this: DecoratedResource, store: MgmtStoreType) {
     return async (opt: IRequestOpt = {}) => {
-      if ( !opt.url ) {
+      if (!opt.url) {
         opt.url = this.linkFor('self')
       }
 
@@ -665,13 +655,13 @@ const Resource = {
 
       const res = await store.server.request(opt)
 
-      if ( res?._status === 204 ) {
+      if (res?._status === 204) {
         store.remove(this.id)
       }
     }
   },
 
-  detailLocation(this: DecoratedResource, store: SteveStoreType) {
+  detailLocation(this: DecoratedResource, store: MgmtStoreType) {
     // Outside computed and dereferenced so they never change on this instance
     const account = store.server?.referenceId
 
@@ -687,7 +677,7 @@ const Resource = {
       }
 
       return <RouteLocationRaw>{
-        name:  detailRoute(this.type, this),
+        name: detailRoute(this.type, this),
         params,
         query: {},
       }
@@ -701,19 +691,19 @@ export default Resource
 export function keyFor(resource: IResource): string {
   const m = resource.metadata
 
-  if ( m?.uid ) {
+  if (m?.uid) {
     return m.uid
   }
 
-  if ( m?.namespace ) {
-    return `${ resource.type }/${ m.namespace }/${ m.name }`
+  if (m?.namespace) {
+    return `${resource.type}/${m.namespace}/${m.name}`
   }
 
-  if ( resource.id ) {
-    return `${ resource.type }/${ resource.id }`
+  if (resource.id) {
+    return `${resource.type}/${resource.id}`
   }
 
   // This won't be consistent and messes up SSR, and shouldn't get hit
   // for real resources, but is still better than nothing if it does
-  return `${ resource.type }/${ Math.random() }`
+  return `${resource.type}/${Math.random()}`
 }

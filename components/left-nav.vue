@@ -3,7 +3,7 @@ const route = useRouter()
 const links = [{
   label: 'Home',
   icon: 'i-heroicons-home',
-  to: '/home'
+  to: '/'
 }, {
   label: 'Users',
   icon: 'i-heroicons-user-group',

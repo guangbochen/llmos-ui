@@ -1,6 +1,14 @@
 import isObject from 'lodash-es/isObject.js'
 import type { JsonDict } from '@/utils/object'
-import type { IWatch } from '@/composables/steve/server'
+import type { IWatch } from '@/composables/steve/type'
+import { SCHEMA } from '@/config/schemas'
+
+export function keyFieldFor(type: string): string {
+  if (type === SCHEMA) {
+    return '_id'
+  }
+  return 'id'
+}
 
 export function normalizeType(type: string): string {
   type = (type || '').toLowerCase()
@@ -11,7 +19,7 @@ export function normalizeType(type: string): string {
 export function keyForSubscribe({
   resourceType, type, namespace, id, selector,
 }: IWatch) {
-  return `${ resourceType || type || '' }/${ namespace || '' }/${ id || '' }/${ selector || '' }`
+  return `${resourceType || type || ''}/${namespace || ''}/${id || ''}/${selector || ''}`
 }
 
 export function watchesAreEquivalent(a: IWatch, b: IWatch) {
