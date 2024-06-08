@@ -1,6 +1,6 @@
 import isObject from 'lodash-es/isObject.js'
 import type { JsonDict } from '@/utils/object'
-import type { IWatch } from '@/composables/steve/type'
+import type { IWatch } from '@/composables/steve/server'
 import { SCHEMA } from '@/config/schemas'
 
 export function keyFieldFor(type: string): string {

@@ -3,7 +3,8 @@ import { LLMOS } from '@/config/schemas';
 
 const mgmt = useManagementStore();
 const localCluster = await mgmt.find(LLMOS.MANAGEMENT.CLUSTER, "local")
-const clusterInfo = localCluster.status.version
+console.log(localCluster)
+const clusterInfo = localCluster.status?.version
 console.log(localCluster.id)
 </script>
 

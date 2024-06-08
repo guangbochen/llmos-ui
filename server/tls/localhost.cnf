@@ -4,10 +4,10 @@ req_extensions = req_ext
 prompt = no
 
 [req_distinguished_name]
-C   = US
-ST  = Arizona
-L   = Tempe
-O   = Acorn Labs
+C   = CN
+ST  = Guangdong
+L   = ShenZhen
+O   = LLMOS AI
 OU  = Engineering
 CN  = localhost
 
@@ -20,4 +20,4 @@ keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
 IP.1 = 127.0.0.1
 DNS.1 = localhost
 DNS.2 = localhost.localdomain
-DNS.3 = *.local.on-acorn.io
+DNS.3 = *.local.on-llmos.ai

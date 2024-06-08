@@ -54,16 +54,6 @@ export const useContext = defineStore("context", {
       mgmt.subscribe()
 
       await mgmt.loadSchemas();
-
-      const p: Promise<ICollection<any>>[] = []
-
-      for ( const k in mgmtStores ) {
-        const s = mgmtStores[k]()
-        s.configure(mgmt)
-        p.push(s.findAll())
-      }
-
-      await Promise.all(p)
     },
   },
 });

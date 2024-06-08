@@ -1,12 +1,10 @@
 // Portions Copyright (c) 2014-2021 Rancher Labs, Inc. https://github.com/rancher/dashboard
-import type { StateTree, Store } from "pinia";
+import type { StateTree } from "pinia";
 import urlOptions from "@/composables/steve/urloptions";
 import { SIMPLE_TYPES, typeRef } from "@/models/schema";
 import type { ISteveServerState, IWatch, IUrlOpt, IType } from "./server";
-import type { ISteveType } from "@/composables/steve/type";
-import type { IMetadata, IResource } from "@/composables/steve/types";
+import type { IMetadata } from "@/composables/steve/types";
 import {
-  keyFieldFor,
   keyForSubscribe,
   normalizeType,
   watchesAreEquivalent,
@@ -24,7 +22,7 @@ export function SteveServerGetters<D>(): StateTree {
       return (type: string) => {
         type = normalizeType(type);
 
-        if (!state.haveAll) {
+        if (!state.types[type].haveAll) {
           console.error(`Asking for all ${type} before they have been loaded`);
         }
 
@@ -48,37 +46,17 @@ export function SteveServerGetters<D>(): StateTree {
       }
     },
 
-    haveSelectorFor: (state: ISteveServerState<D>) => (selector: string): boolean => {
-      return state.haveSelector[selector] || false;
+    haveSelectorFor: (state: ISteveServerState<D>) => (type: string, selector: string): boolean => {
+      type = normalizeType(type);
+      const entry = state.types[type];
+
+      return entry.haveSelector[selector] || false;
     },
 
     // Fuzzy search to find a matching schema name for plugins/lookup
-    schemaName: (state: ISteveServerState<D>) => (type: string) => {
-      type = normalizeType(type);
-      const schemas = state.types[SCHEMA];
-      const keyField = keyFieldFor(SCHEMA);
-      const entries = schemas.list.filter((x) => {
-        const thisOne = normalizeType(x[keyField]);
-
-        return thisOne === type || thisOne.endsWith(`.${type}`);
-      })
-        .map((x) => {
-          return x[keyField];
-        })
-        .sort((a, b) => {
-          return a.length - b.length;
-        });
-
-      if (entries[0]) {
-        return entries[0];
-      }
-
-      return type;
-    },
-
     schemaFor: (state: ISteveServerState<D>) => (type: string): DecoratedSchema | undefined => {
-        type = normalizeType(type);
-        return state.schemas[type]
+      type = normalizeType(type);
+      return state.schemas[type]
     },
 
     defaultFor: (state: ISteveServerState<D>) => (type: string, depth = 0): JsonDict => {
@@ -140,7 +118,7 @@ export function SteveServerGetters<D>(): StateTree {
     canList: (state: ISteveServerState<D>) => (type: string): Boolean => {
       type = normalizeType(type);
       const schema = state.schemaFor(type);
-  
+
       return schema && schema.hasLink('collection');
     },
 
@@ -149,7 +127,7 @@ export function SteveServerGetters<D>(): StateTree {
       return state.types[type];
     },
 
-    urlFor(state: ISteveServerState<D>){
+    urlFor(state: ISteveServerState<D>) {
       return (type: string, id?: string, opt: IUrlOpt = {}): string => {
         opt = opt || {};
         type = normalizeType(type);
@@ -205,27 +183,27 @@ export function SteveServerGetters<D>(): StateTree {
     haveAll: (state: ISteveServerState<D>) => (type: string) => {
       type = normalizeType(type);
       const entry = state.types[type];
-  
+
       if (entry) {
         return entry.haveAll || false;
       }
-  
+
       return false;
     },
-  
+
     haveSelector: (state: ISteveServerState<D>) => (type: string, selector: string) => {
       type = normalizeType(type);
       const entry = state.types[type];
-  
-      if ( entry ) {
+
+      if (entry) {
         return entry.haveSelector[selector] || false;
       }
-  
+
       return false;
     },
 
     /***
-     * Subscribe getters
+     * WebScoket related getters
      */
     canWatch: (state: ISteveServerState<D>) => (obj: IWatch): boolean => {
       return !state.inError[keyForSubscribe(obj)];
@@ -242,7 +220,6 @@ export function SteveServerGetters<D>(): StateTree {
     },
 
     nextResourceVersion: (state: ISteveServerState<D>) => (type: string, id: string): number | null => {
-
       type = normalizeType(type);
       let revision = 0;
 

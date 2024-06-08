@@ -1,8 +1,7 @@
 import https from "node:https";
 import type { StateTree } from "pinia";
-import type { IResource } from "@/composables/steve/types";
+import type { IResource } from "./types";
 import type { JsonDict, JsonValue } from "@/utils/object";
-import type { ISteveType } from "@/composables/steve/type";
 
 export interface IType {
     list: [];
@@ -53,6 +52,12 @@ export interface IUrlOpt {
   sortOrder?: "asc" | "desc";
 }
 
+// opt:
+// filter: Filter by fields, e.g. {field: value, anotherField: anotherValue} (default: none)
+// limit: Number of records to return per page (default: 1000)
+// sortBy: Sort by field
+// sortOrder: asc or desc
+// url: Use this specific URL instead of looking up the URL for the type/id.  This should only be used for bootstrapping schemas on startup.
 export interface IRequestOpt {
   url?: string;
   method?: string;
@@ -77,10 +82,6 @@ export interface IRequestOpt {
   forceWatch?: boolean;
 }
 
-export const NO_WATCH = "NO_WATCH";
-export const NO_SCHEMA = "NO_SCHEMA";
-
-
 /**
  * Represents the state of the ISteveType.
  * @template D - The type of data stored in the IStored array.
@@ -92,7 +93,6 @@ export interface ISteveServerState<D> extends StateTree {
   name: string;
   schemas: Record<string, DecoratedSchema>;
   types: Record<string, IType>;
-  // socket?: Socket | null;
   queue: IQueueAction[];
   wantSocket: boolean;
   debugSocket: boolean;
@@ -109,7 +109,6 @@ export function SteveServerState<D>(config: ISteveServerState<D>["config"]) {
       name: "",
       schemas: reactive<Record<string, DecoratedSchema>>({}),
       types: {},
-      // socket: null,
       queue: [], // For change event coalescing
       wantSocket: false,
       debugSocket: false,

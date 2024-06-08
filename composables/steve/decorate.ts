@@ -20,7 +20,8 @@ let lastId = 1
  * @param store - The store object.
  * @returns A promise that resolves to the decorated resource object.
  */
-export default async function decorate<T extends IResource, D extends DecoratedResource>(data: T, store: any): Promise<IWritable<D>> {
+export default async function decorate<T extends IResource, D extends DecoratedResource>
+  (data: T, store: any): Promise<IWritable<D>> {
   let keys: string[]
   let ModelImpl = null
 

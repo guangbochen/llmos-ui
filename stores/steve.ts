@@ -17,10 +17,3 @@ export const useManagementStore = defineStore("mgmt", {
 });
 
 export type MgmtStoreType = ReturnType<typeof useManagementStore>
-
-// define pre-loaded stores if any
-export const mgmtStores: Record<string, IType> = {}
-
-export function storeFor(type: string) {
-  return mgmtStores[type]
-}

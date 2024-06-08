@@ -1,4 +1,4 @@
-// Adapted from: https://github.com/rancher/dashboard
+// Portion adapted from: https://github.com/rancher/dashboard
 import { fromArray } from '@/utils/array'
 
 // Steve types
