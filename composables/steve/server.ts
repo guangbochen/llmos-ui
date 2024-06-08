@@ -3,15 +3,6 @@ import type { StateTree } from "pinia";
 import type { IResource } from "./types";
 import type { JsonDict, JsonValue } from "@/utils/object";
 
-export interface IType {
-    list: [];
-    haveAll: boolean;
-    haveSelector: Record<string, boolean>;
-    revision: 0; // The highest known resourceVersion from the server for this type
-    generation: 0;
-    map: Map<string, any>;
-}
-
 export interface IWatch {
   type?: string;
   resourceType?: string;
@@ -80,6 +71,15 @@ export interface IRequestOpt {
   watch?: boolean;
   watchNamespace?: string;
   forceWatch?: boolean;
+}
+
+export interface IType extends DecoratedResource{
+    list: [];
+    haveAll: boolean;
+    haveSelector: Record<string, boolean>;
+    revision: 0; // The highest known resourceVersion from the server for this type
+    generation: 0;
+    map: Map<string, any>;
 }
 
 /**

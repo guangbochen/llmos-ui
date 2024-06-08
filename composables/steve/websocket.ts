@@ -12,6 +12,7 @@ import Socket, {
 } from "@/utils/socket";
 import type {
   ISchema,
+  IResource,
 } from "@/composables/steve/types";
 import { SCHEMA } from "@/config/schemas";
 import {

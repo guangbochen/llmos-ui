@@ -30,11 +30,11 @@ declare global {
   export interface DecoratedResource extends IResource, IDecoratedResource { }
 }
 
-const Resource = {
+const Resource: any = {
   // -------------------------------
   // Editing
   // -------------------------------
-  clone(this: DecoratedResource, store: any) {
+  clone(this: DecoratedResource, store: MgmtStoreType) {
     return async () => {
       const json = JSON.stringify(toRaw(this))
       const neu = await decorate(JSON.parse(json), store) as DecoratedResource
@@ -47,7 +47,7 @@ const Resource = {
 
   refresh(this: DecoratedResource, store: MgmtStoreType) {
     return async () => {
-      return store.find(this.id, { force: true })
+      return store.find(this.type, this.id, { force: true })
     }
   },
 
@@ -87,7 +87,7 @@ const Resource = {
 
       if (!opt.url) {
         if (forNew) {
-          const schema = store.schema
+          const schema = store.schemas[this.type]
 
           opt.url = schema.linkFor('collection')
 
@@ -118,9 +118,11 @@ const Resource = {
       opt.body = { ...this }
 
       try {
-        const res = await store.server.request({ ...opt, retry: 0 })
+        const res = await store.request({ ...opt, retry: 0 })
 
         this.update(res)
+
+        let cache = store.types[this.type]
 
         if (forNew && loadAfterSave(this.type)) {
           if (store.map[this.id]) {

@@ -1,5 +1,5 @@
 import https from 'https';
-import type { StateTree } from "pinia";
+import type { StateTree, Store } from "pinia";
 import type {
   ICollection,
   IResource,
@@ -381,13 +381,15 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
 
       cache.generation++;
 
+
       if (entry) {
         // There's already an entry in the store, update it
         entry.update(data);
       } else {
         // There's no entry, make a new proxy
-        cache.list.push(data);
-        cache.map.set(id, data);
+        entry = readonly(await decorate<T, D>(data, this)) as D;
+        cache.list.push(entry);
+        cache.map.set(id, entry);
       }
 
       if (pollTransitioning(type) && (entry.metadata?.state?.transitioning || entry.metadata?.state?.error)) {
@@ -485,16 +487,6 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
         console.info(`Removed: ${obj.type} ${obj.id}`, ts);
         return true
       }
-      // if (ts) {
-      //   this.generation++;
-      //   removeObject(ts.list, obj);
-      //   ts.map.delete(obj.id);
-      //   // delete this.map[obj.id];
-
-      //   console.info(`Removed: ${obj.type} ${obj.id}`, ts);
-      //   return true;
-      // }
-
       return false;
     },
 
