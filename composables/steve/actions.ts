@@ -1,5 +1,5 @@
 import https from 'https';
-import type { StateTree, Store } from "pinia";
+import type { StateTree } from "pinia";
 import type {
   ICollection,
   IResource,
@@ -381,7 +381,6 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
 
       cache.generation++;
 
-
       if (entry) {
         // There's already an entry in the store, update it
         entry.update(data);
@@ -469,24 +468,14 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
     },
 
     remove(this: StateTree, ts: IType, obj: T & IResource) {
-      // let obj: IStored<IResource>;
-      console.log("remove origin obj ---", obj)
-      // if (typeof objOrId === "string") {
       obj = this.byId(obj.type, obj.id);
-      console.log("find remove obj ---", obj)
-      // } else {
-      //   obj = objOrId;
-      // }
-
-      console.log("remove obj ---", ts, obj)
-      // let entry = this.types[obj.type];
-
       if (ts) {
         removeObject(ts.list, obj);
         ts.map.delete(obj.id);
         console.info(`Removed: ${obj.type} ${obj.id}`, ts);
         return true
       }
+
       return false;
     },
 
