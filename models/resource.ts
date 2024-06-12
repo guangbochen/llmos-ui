@@ -34,7 +34,7 @@ const Resource: any = {
   // -------------------------------
   // Editing
   // -------------------------------
-  clone(this: DecoratedResource, store: MgmtStoreType) {
+  clone(this: DecoratedResource, store: any) {
     return async () => {
       const json = JSON.stringify(toRaw(this))
       const neu = await decorate(JSON.parse(json), store) as DecoratedResource
@@ -45,7 +45,7 @@ const Resource: any = {
     }
   },
 
-  refresh(this: DecoratedResource, store: MgmtStoreType) {
+  refresh(this: DecoratedResource, store: any) {
     return async () => {
       return store.find(this.type, this.id, { force: true })
     }
@@ -122,8 +122,6 @@ const Resource: any = {
 
         this.update(res)
 
-        let cache = store.types[this.type]
-
         if (forNew && loadAfterSave(this.type)) {
           if (store.map[this.id]) {
             // With really unlucky timing the websocket create event might
@@ -142,7 +140,7 @@ const Resource: any = {
       } catch (e: any) {
         if (opt.retry !== 0 && this.type && this.id && this.__original && e.status === 409) {
           // If there's a conflict, try to load the new version
-          const fromServer = await store.find(this.id, { force: true })
+          const fromServer = await store.find(this.type, this.id, { force: true })
 
           const orig = cleanForDiff(JSON.parse(this.__original))
           const user = cleanForDiff(this)
@@ -522,7 +520,9 @@ const Resource: any = {
 
   availableActions(this: DecoratedResource, store: MgmtStoreType) {
     return computed(() => {
-      const canCreate = unref(store.schema.canCreate)
+      console.log('### availableActions', this.type, this.id, store.Schema)
+      // const canCreate = unref(store.schema.canCreate)
+      const canCreate = true
       const canUpdate = unref(this.canUpdate)
       const canClone = unref(this.canClone)
       // const canYaml = unref(this.canYaml)
@@ -658,7 +658,7 @@ const Resource: any = {
       const res = await store.server.request(opt)
 
       if (res?._status === 204) {
-        store.remove(this.id)
+        store.remove(this.type, this)
       }
     }
   },

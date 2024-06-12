@@ -20,8 +20,6 @@ export default (opt: any, nuxt: Nuxt) => {
         req.headers.reqid = randomStr()
       }
 
-      // console.info(`[${ req.headers.reqid }] WS Proxy 3 from`, req.url, 'to', api)
-
       proxy = useProxy(api)
 
       return proxy.upgrade!(req as any, socket, head)

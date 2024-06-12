@@ -137,9 +137,6 @@ export const actions = {
       console.debug(`Subscribe Flush [${this.name}]`, queue.length, "items");
 
     for (const { action, type, body, id, event } of queue) {
-      const ts = this.storeFor(type);
-      console.log("action:", action, ts, id, body)
-
       if (action === "load") {
         const obj = await this.load(body);
 
@@ -147,7 +144,7 @@ export const actions = {
           obj.notify(event);
         }
       } else if (action === "remove") {
-        await this.remove(ts, body);
+        await this.remove(type, id);
       } else if (action === "forgetType") {
         this.forgetType(type);
       }
@@ -194,13 +191,13 @@ export const actions = {
       return;
     }
 
-    const ts = this.storeFor(type);
+    const ty = this.typeFor(type);
 
-    if (!ts) {
+    if (!ty) {
       return;
     }
 
-    ts.revision = Math.max(ts.revision, Number.parseInt(revision || "", 10));
+    ty.revision = Math.max(ty.revision, Number.parseInt(revision || "", 10));
 
     // console.info(`${ label } Event [${ state.config.namespace }]`, data.type, data.id);
 
@@ -216,6 +213,7 @@ export const actions = {
         action: "remove",
         type,
         body: data,
+        id: data.id,
       });
     }
   },
@@ -261,9 +259,9 @@ export const actions = {
 
     console.info(`Resync [${this.name}]`, params);
 
-    const ts = this.storeFor(resourceType);
+    const cache = this.typeFor(resourceType);
 
-    if (!ts) {
+    if (!cache) {
       return;
     }
 
@@ -289,7 +287,7 @@ export const actions = {
       if (namespace) {
         have = this.inNamespace(namespace);
       } else {
-        have = this.list.slice();
+        have = cache.list.slice();
       }
 
       want = await this.findAll({
@@ -309,7 +307,7 @@ export const actions = {
         this.debugSocket &&
           console.debug(`Remove stale [${this.name}]`, resourceType, obj.id);
 
-        this.remove(obj);
+        this.remove(obj.type, obj.id);
       }
     }
   },
@@ -360,10 +358,6 @@ export const actions = {
 
     type = normalizeType(type || "");
 
-    console.log("debug:", params, type);
-    // if ( params.type === "schema" ) {
-    //   return
-    // }
     if (!stop && !force && !this.canWatch(params)) {
       this.debugSocket &&
         console.debug(`Cannot Watch [${this.name}]`, JSON.stringify(params));

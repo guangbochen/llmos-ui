@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
 import { useManagementStore } from "@/stores/steve";
-import type { ICollection } from '@/composables/steve/types'
 
 export const useContext = defineStore("context", {
   state: () => {
     return {
       mgmtSetup: false,
+      namespace: ""
     };
   },
 

@@ -3,7 +3,7 @@ import type { StateTree } from "pinia";
 import urlOptions from "@/composables/steve/urloptions";
 import { SIMPLE_TYPES, typeRef } from "@/models/schema";
 import type { ISteveServerState, IWatch, IUrlOpt, IType } from "./server";
-import type { IMetadata } from "@/composables/steve/types";
+import type { IMetadata, IResource } from "@/composables/steve/types";
 import {
   keyForSubscribe,
   normalizeType,
@@ -11,22 +11,62 @@ import {
 } from "./normalize";
 import { SCHEMA } from "@/config/schemas";
 
-export function SteveServerGetters<D>(): StateTree {
+export function SteveServerGetters(): StateTree {
   return {
     /**
-     * Returns a function that retrieves all items of a specific type from the state.
-     * @param state - The state object.
-     * @returns A function that takes a type string and returns an array of items of that type.
+     * Server getters
      */
-    all(state: ISteveServerState<D>): (type: string) => IStored<D>[] {
+
+    // find type by name
+    typeFor: (state: ISteveServerState) => (type: string): IType | undefined => {
+      type = normalizeType(type);
+      return state.types[type];
+    },
+
+    // check if type is registerd
+    typeRegistered: (state: ISteveServerState) => (type: string) => {
+      type = normalizeType(type);
+
+      return !!state.types[type];
+    },
+
+    // find schema by type name
+    schemaFor: (state: ISteveServerState) => (type: string): DecoratedSchema | undefined => {
+      type = normalizeType(type);
+      return state.schemas[type]
+    },
+
+    // check if a watch is in error
+    canWatch: (state: ISteveServerState) => (obj: IWatch): boolean => {
+      return !state.inError[keyForSubscribe(obj)];
+    },
+
+    // check if a watch is started
+    watchStarted: (state: ISteveServerState) => (obj: IWatch): boolean => {
+      return !!state.started.find((entry) =>
+        watchesAreEquivalent(obj, entry)
+      );
+    },
+
+    // check if a watch is existing
+    existingWatchFor: (state: ISteveServerState) => (obj: IWatch): IWatch | undefined => {
+      return state.started.find((entry) => watchesAreEquivalent(obj, entry));
+    },
+
+    /**
+     * Type getters
+     */
+
+    // get type list by type name
+    all(state: ISteveServerState): (type: string) => IStored[] {
       return (type: string) => {
+
         type = normalizeType(type);
 
         if (!state.types[type].haveAll) {
           console.error(`Asking for all ${type} before they have been loaded`);
         }
 
-        console.log("state.types", state);
         if (!this.typeRegistered(type)) {
           // Yes this is mutating state in a getter... it's not the end of the world..
           // throw new Error(`All of ${ type } is not loaded`);
@@ -37,7 +77,8 @@ export function SteveServerGetters<D>(): StateTree {
       };
     },
 
-    byId: (state: ISteveServerState<D>) => (type: string, id: string) => {
+    // get type obj by type name and id
+    byId: (state: ISteveServerState) => (type: string, id: string) => {
       type = normalizeType(type);
       const entry = state.types[type];
 
@@ -46,20 +87,27 @@ export function SteveServerGetters<D>(): StateTree {
       }
     },
 
-    haveSelectorFor: (state: ISteveServerState<D>) => (type: string, selector: string): boolean => {
+    inNamespace: (state: ISteveServerState) => (namespace: string, type: string) => {
+      const entry = state.typeFor(type)
+      if (entry) {
+        return computed(() => {
+          return entry.list.filter((obj: IResource) => {
+            return obj.metadata.namespace === namespace
+          })
+        })
+      }
+      return false
+    },
+
+    haveSelectorFor: (state: ISteveServerState) => (type: string, selector: string): boolean => {
       type = normalizeType(type);
-      const entry = state.types[type];
+      const entry = state.typeFor(type);
 
       return entry.haveSelector[selector] || false;
     },
 
-    // Fuzzy search to find a matching schema name for plugins/lookup
-    schemaFor: (state: ISteveServerState<D>) => (type: string): DecoratedSchema | undefined => {
-      type = normalizeType(type);
-      return state.schemas[type]
-    },
 
-    defaultFor: (state: ISteveServerState<D>) => (type: string, depth = 0): JsonDict => {
+    defaultFor: (state: ISteveServerState) => (type: string, depth = 0): JsonDict => {
       type = normalizeType(type);
       const schema = state.schemaFor(type);
 
@@ -115,19 +163,14 @@ export function SteveServerGetters<D>(): StateTree {
       return out;
     },
 
-    canList: (state: ISteveServerState<D>) => (type: string): Boolean => {
+    canList: (state: ISteveServerState) => (type: string): Boolean => {
       type = normalizeType(type);
       const schema = state.schemaFor(type);
 
       return schema && schema.hasLink('collection');
     },
 
-    storeFor: (state: ISteveServerState<D>) => (type: string): IType | undefined => {
-      type = normalizeType(type);
-      return state.types[type];
-    },
-
-    urlFor(state: ISteveServerState<D>) {
+    urlFor(state: ISteveServerState) {
       return (type: string, id?: string, opt: IUrlOpt = {}): string => {
         opt = opt || {};
         type = normalizeType(type);
@@ -168,19 +211,14 @@ export function SteveServerGetters<D>(): StateTree {
       };
     },
 
-    typeRegistered: (state: ISteveServerState<D>) => (type: string) => {
-      type = normalizeType(type);
 
-      return !!state.types[type];
-    },
-
-    typeEntry: (state: ISteveServerState<D>) => (type: string) => {
+    typeEntry: (state: ISteveServerState) => (type: string) => {
       type = normalizeType(type);
 
       return state.types[type];
     },
 
-    haveAll: (state: ISteveServerState<D>) => (type: string) => {
+    haveAll: (state: ISteveServerState) => (type: string) => {
       type = normalizeType(type);
       const entry = state.types[type];
 
@@ -191,7 +229,7 @@ export function SteveServerGetters<D>(): StateTree {
       return false;
     },
 
-    haveSelector: (state: ISteveServerState<D>) => (type: string, selector: string) => {
+    haveSelector: (state: ISteveServerState) => (type: string, selector: string) => {
       type = normalizeType(type);
       const entry = state.types[type];
 
@@ -202,24 +240,7 @@ export function SteveServerGetters<D>(): StateTree {
       return false;
     },
 
-    /***
-     * WebScoket related getters
-     */
-    canWatch: (state: ISteveServerState<D>) => (obj: IWatch): boolean => {
-      return !state.inError[keyForSubscribe(obj)];
-    },
-
-    watchStarted: (state: ISteveServerState<D>) => (obj: IWatch): boolean => {
-      return !!state.started.find((entry) =>
-        watchesAreEquivalent(obj, entry)
-      );
-    },
-
-    existingWatchFor: (state: ISteveServerState<D>) => (obj: IWatch): IWatch | undefined => {
-      return state.started.find((entry) => watchesAreEquivalent(obj, entry));
-    },
-
-    nextResourceVersion: (state: ISteveServerState<D>) => (type: string, id: string): number | null => {
+    nextResourceVersion: (state: ISteveServerState) => (type: string, id: string): number | null => {
       type = normalizeType(type);
       let revision = 0;
 
@@ -258,7 +279,7 @@ export function SteveServerGetters<D>(): StateTree {
       return null;
     },
 
-    currentGeneration: (state: ISteveServerState<D>) => (type: string): number | null => {
+    currentGeneration: (state: ISteveServerState) => (type: string): number | null => {
       type = normalizeType(type);
 
       const cache = state.types[type];

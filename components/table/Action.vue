@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// import type { ModelFile } from '~/types'
 const items = [
   [{
     label: 'Edit',

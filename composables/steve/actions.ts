@@ -13,7 +13,7 @@ import type {
   IWatchMsg,
   IRequestOpt,
   IWatch,
-  IType
+  IType,
 } from "./server";
 import { SCHEMA } from "@/config/schemas";
 import decorate from "@/composables/steve/decorate";
@@ -21,10 +21,10 @@ import { clear, isArray, removeObject } from "@/utils/array";
 import { pollTransitioning, watchable } from "@/config/schemas";
 import { actions as WebSocketActions } from "./websocket";
 
-export function SteveServerActions<T extends IResource, D extends DecoratedResource>() {
+export function SteveServerActions<D extends DecoratedResource>() {
   return {
     /***
-     * Server's general actions
+     * Server actions
      */
     configure(this: StateTree, baseUrl: string, referenceId = ''): void {
       this.name = this.$id
@@ -32,15 +32,15 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       this.referenceId = referenceId
     },
 
-    registerType(this: StateTree, type: string): IType {
-      type = normalizeType(type);
-      let cache = this.types[type];
+    registerType(this: StateTree, type: string): D {
+      let cache = this.typeFor(type)
 
       if (!cache) {
         cache = {
           list: [],
           haveAll: false,
           haveSelector: {},
+          haveNamesapce: {},
           revision: 0, // The highest known resourceVersion from the server for this type
           generation: 0, // Updated every time something is loaded for this type
           map: new Map(),
@@ -217,11 +217,10 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
     },
 
     forgetType(this: StateTree, type: string, disconnect = true) {
-      type = normalizeType(type);
-      const ts = this.storeFor(type);
+      const t = this.typeFor(type);
 
-      if (ts) {
-        this.reset();
+      if (t && !disconnect) {
+        this.reset(type);
       }
 
       if (disconnect) {
@@ -247,10 +246,10 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
     },
 
     /**
-     * Steve type resource related actions
+     * Type actions
      */
-    //  @TODO depaginate: If the response is paginated, retrieve all the pages. (default: true)
     // findAll helps to find all resources by type
+    // @TODO depaginate: If the response is paginated, retrieve all the pages. (default: true)
     async findAll(this: StateTree, type: string, opt: IRequestOpt = {}): Promise<D[]> {
       if (this.limitNamespace) {
         const out = await this.findNamespace(this.limitNamespace, opt)
@@ -271,21 +270,19 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
         load = "none";
       }
 
-      console.info(`Find All: ${type}`);
-
       opt = opt || {};
       opt.url = this.urlFor(type, undefined, opt);
 
-      let res: ICollection<T>;
+      let res: ICollection<D>;
 
       try {
-        res = (await this.request(opt)) as unknown as ICollection<T>;
+        res = (await this.request(opt)) as unknown as ICollection<D>;
       } catch (e) {
         return Promise.reject(e);
       }
 
       if (load === "none") {
-        return this.eachLimit(res.data, 20, (obj: T): Promise<D> => decorate<T, D>(obj, this));
+        return this.eachLimit(res.data, 20, (obj: IResource): Promise<IResource> => decorate<IResource, D>(obj, this));
       } else if (typeof res === "object" && !isArray(res)) {
         if (load === "multi") {
           // This has the effect of adding the response to the store,
@@ -354,11 +351,11 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       return this.byId(type, res.id || id);
     },
 
-    async load(this: StateTree, data: T & IResource, existing: any): Promise<D | void> {
+    async load(this: StateTree, data: IResource, existing: any): Promise<D | void> {
       let type = normalizeType(data.type);
       if (!this.typeRegistered(type)) {
         this.registerType(type);
-      } 
+      }
 
       if (data.baseType && data.baseType !== data.type) {
         type = normalizeType(data.baseType);
@@ -398,7 +395,7 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       return this.byId(type, id);
     },
 
-    async loadMulti(this: StateTree, data: T[]) {
+    async loadMulti(this: StateTree, data: IResource[]) {
       // console.debug('### Mutation loadMulti', data?.length);
       const promises = [];
 
@@ -409,7 +406,7 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       await Promise.all(promises);
     },
 
-    async loadAll(this: StateTree, type: string, data: T[]) {
+    async loadAll(this: StateTree, type: string, data: IResource[]) {
       if (!data || type === SCHEMA) {
         return;
       }
@@ -429,14 +426,14 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       cache.haveAll = true;
     },
 
-    reset(this: StateTree) {
-      clear(this.list);
-      this.map = {};
-      this.haveAll = false;
-      this.haveSelector = {};
-      this.haveNamespace = {};
-      this.revision = 0;
-      this.generation++;
+    reset(this: StateTree, type: string) {
+      let cache = this.typeFor(type);
+      clear(cache.list);
+      cache.map = {};
+      cache.haveAll = false;
+      cache.haveSelector = {};
+      cache.revision = 0;
+      cache.generation++;
     },
 
     async loadNamespace(this: StateTree, data: D[], namespace: string) {
@@ -449,7 +446,7 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       this.haveSelector[selector] = true;
     },
 
-    async create(this: StateTree, data?: Partial<T>): Promise<IWritable<D>> {
+    async create(this: StateTree, data?: Partial<IResource>): Promise<IWritable> {
       const obj = this.defaultFor(this.type);
 
       Object.assign(obj, data);
@@ -462,20 +459,25 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
         obj.metadata.namespace = this.limitNamespace;
       }
 
-      const out = await decorate<T, D>(obj, this);
+      const out = await decorate<IResource, D>(obj, this);
 
       return out;
     },
 
-    remove(this: StateTree, ts: IType, obj: T & IResource) {
-      obj = this.byId(obj.type, obj.id);
-      if (ts) {
-        removeObject(ts.list, obj);
-        ts.map.delete(obj.id);
-        console.info(`Removed: ${obj.type} ${obj.id}`, ts);
-        return true
+    remove(this: StateTree, type: string, objOrId: D | string) {
+      let obj: D;
+      let cache = this.types[type];
+      if (typeof objOrId === 'string') {
+        obj = this.byId(type, objOrId)
+      } else {
+        obj = objOrId
       }
 
+      if (cache && obj) {
+        removeObject(cache.list, obj);
+        cache.map.delete(obj.id);
+        return true
+      }
       return false;
     },
 
@@ -491,7 +493,7 @@ export function SteveServerActions<T extends IResource, D extends DecoratedResou
       opt = opt || {};
       opt.url = this.urlFor(this.type, namespace, opt);
 
-      const res = (await this.request(opt)) as unknown as ICollection<T>;
+      const res = (await this.request(opt)) as unknown as ICollection<IResource>;
 
       await this.loadNamespace(res.data, namespace);
 

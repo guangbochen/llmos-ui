@@ -1,6 +1,5 @@
 import type { RequestHandler } from 'http-proxy-middleware'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import type { H3Event } from 'h3'
 import { isDev } from '../../config/server'
 import { randomStr } from '../../utils/string'
 
@@ -15,9 +14,9 @@ const cache: Record<string, RequestHandler> = {}
  * @returns The proxy function for the specified API.
  */
 export default function useProxy(api: string, strip = 0) {
-  const key = `${ strip }-${ api }`
+  const key = `${strip}-${api}`
 
-  if ( !cache[key] ) {
+  if (!cache[key]) {
     cache[key] = createProxy(api, strip)
   }
 
@@ -33,62 +32,63 @@ export default function useProxy(api: string, strip = 0) {
  */
 function createProxy(api: string, strip = 0) {
   const out = createProxyMiddleware({
-    target:          api,
-    changeOrigin:    true,
+    target: api,
+    changeOrigin: true,
     followRedirects: false,
-    secure:          !isDev,
-    ws:              true,
-
-    onProxyReq(proxyReq, req, res) {
-      if ( !req.headers?.reqid ) {
-        req.headers.reqid = randomStr()
-        res.setHeader('reqid', req.headers.reqid)
-      }
-
-      if ( strip ) {
-        const parts = proxyReq.path.split('/')
-        const removed = parts.splice(1, strip)
-
-        proxyReq.path = parts.join('/')
-
-        if ( removed.length ) {
-          proxyReq.setHeader('x-api-url-prefix', `/${ removed.join('/') }`)
+    secure: !isDev,
+    ws: true,
+    on: {
+      proxyReq(proxyReq, req, res) {
+        if (!req.headers?.reqid) {
+          req.headers.reqid = randomStr()
+          res.setHeader('reqid', req.headers.reqid)
         }
-      }
 
-      proxyReq.setHeader('origin', api)
-      proxyReq.setHeader('x-api-host', req.headers.host || '')
-      proxyReq.setHeader('x-forwarded-proto', 'https')
+        if (strip) {
+          const parts = proxyReq.path.split('/')
+          const removed = parts.splice(1, strip)
 
-      // console.info(`[${ req.headers.reqid }] Proxy onProxyReq`, proxyReq.path, JSON.stringify(proxyReq.getHeaders()))
-    },
+          proxyReq.path = parts.join('/')
 
-    onProxyReqWs(proxyReq, req) {
-      if ( !req.headers.reqid ) {
-        req.headers.reqid = randomStr()
-      }
-
-      if ( strip ) {
-        const parts = proxyReq.path.split('/')
-        const removed = parts.splice(1, strip)
-
-        proxyReq.path = parts.join('/')
-
-        if ( removed.length ) {
-          proxyReq.setHeader('x-api-url-prefix', `/${ removed.join('/') }`)
+          if (removed.length) {
+            proxyReq.setHeader('x-api-url-prefix', `/${removed.join('/')}`)
+          }
         }
-      }
 
-      proxyReq.setHeader('origin', api)
-      proxyReq.setHeader('x-api-host', req.headers.host || '')
-      proxyReq.setHeader('x-forwarded-proto', 'https')
+        proxyReq.setHeader('origin', api)
+        proxyReq.setHeader('x-api-host', req.headers.host || '')
+        proxyReq.setHeader('x-forwarded-proto', 'https')
 
-      // console.info(`[${ req.headers.reqid }] Proxy onProxyReqWs`, proxyReq.path, JSON.stringify(proxyReq.getHeaders()))
-    },
+        // console.info(`[${ req.headers.reqid }] Proxy onProxyReq`, proxyReq.path, JSON.stringify(proxyReq.getHeaders()))
+      },
 
-    onError(err, req, res) {
-      console.error(`[${ req.headers?.reqid }] Proxy onError`, res.statusCode, JSON.stringify(err))
-    },
+      proxyReqWs(proxyReq, req) {
+        if (!req.headers.reqid) {
+          req.headers.reqid = randomStr()
+        }
+
+        if (strip) {
+          const parts = proxyReq.path.split('/')
+          const removed = parts.splice(1, strip)
+
+          proxyReq.path = parts.join('/')
+
+          if (removed.length) {
+            proxyReq.setHeader('x-api-url-prefix', `/${removed.join('/')}`)
+          }
+        }
+
+        proxyReq.setHeader('origin', api)
+        proxyReq.setHeader('x-api-host', req.headers.host || '')
+        proxyReq.setHeader('x-forwarded-proto', 'https')
+
+        // console.info(`[${ req.headers.reqid }] Proxy onProxyReqWs`, proxyReq.path, JSON.stringify(proxyReq.getHeaders()))
+      },
+
+      error(err, req, res) {
+        console.error(`[${req.headers?.reqid}] Proxy onError`, res.statusCode, JSON.stringify(err))
+      },
+    }
   })
 
   return out

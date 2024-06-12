@@ -1,4 +1,4 @@
-const LLMOS_REGEX = /^(.*\.)?llmos\.ai\//
+export const LLMOS_REGEX = /^(.*\.)?llmos\.ai\//
 
 /**
  * Regular expression to match labels that should be ignored.

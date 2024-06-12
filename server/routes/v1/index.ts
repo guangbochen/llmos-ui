@@ -1,5 +1,4 @@
 import useProxy from '@/server/utils/proxy'
-import { RequestHandler } from 'express';
 
 /**
  * Defines an event handler that proxies the request to the specified API endpoint.

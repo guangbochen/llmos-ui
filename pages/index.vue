@@ -17,7 +17,6 @@ console.log(localCluster.id)
 
     <div class="flex gap-3">
       <span>Name:</span>{{ localCluster.metadata.name }}
-      <span>Kubernetes Version:</span>{{ clusterInfo.gitVersion }}
       <span>Architecture:</span>{{ clusterInfo.platform }}
       <span>Created:</span>{{ localCluster.metadata.creationTimestamp }}
     </div>

@@ -73,20 +73,21 @@ export interface IRequestOpt {
   forceWatch?: boolean;
 }
 
-export interface IType extends DecoratedResource{
-    list: [];
-    haveAll: boolean;
-    haveSelector: Record<string, boolean>;
-    revision: 0; // The highest known resourceVersion from the server for this type
-    generation: 0;
-    map: Map<string, any>;
+export interface IType {
+  list: IStored[];
+  haveAll: boolean;
+  haveSelector: Record<string, boolean>;
+  haveNamespace: Record<string, boolean>;
+  revision: 0; // The highest known resourceVersion from the server for this type
+  generation: 0;
+  map: Map<string, IStored>;
 }
 
 /**
  * Represents the state of the ISteveType.
  * @template D - The type of data stored in the IStored array.
  */
-export interface ISteveServerState<D> extends StateTree {
+export interface ISteveServerState extends StateTree {
   config: {
     baseUrl: string;
   };
@@ -102,8 +103,8 @@ export interface ISteveServerState<D> extends StateTree {
   inError: Record<string, string>;
 }
 
-export function SteveServerState<D>(config: ISteveServerState<D>["config"]) {
-  return (): ISteveServerState<D> => {
+export function SteveServerState(config: ISteveServerState["config"]) {
+  return (): ISteveServerState => {
     return {
       config,
       name: "",

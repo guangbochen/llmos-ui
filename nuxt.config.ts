@@ -1,4 +1,3 @@
-import pkg from './package.json'
 import dotenv from 'dotenv'
 import fs from 'node:fs'
 import https from 'node:https'
@@ -10,7 +9,6 @@ import { isDev } from './config/server'
 const port = 3100
 const hmrPort = port + 1
 
-const lifecycle = process.env.npm_lifecycle_event
 const ssl = isDev && process.env.SSL !== 'false'
 
 let hmrServer: any

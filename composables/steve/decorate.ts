@@ -3,11 +3,11 @@ import type { DeepReadonly } from 'vue'
 import type { IResource } from '@/composables/steve/types'
 import ResourceImpl from '@/models/resource'
 import { uniq } from '@/utils/array'
+import type { IType } from '@/composables/steve/server'
 
 declare global {
-  type IWritable<D> = IResource & DecoratedResource & D;
-
-  type IStored<D> = DeepReadonly<IWritable<D>>;
+  type IWritable = IResource & DecoratedResource & IType;
+  type IStored = DeepReadonly<IWritable>;
 }
 
 const resourceKeys = Object.keys(ResourceImpl)
@@ -21,7 +21,7 @@ let lastId = 1
  * @returns A promise that resolves to the decorated resource object.
  */
 export default async function decorate<T extends IResource, D extends DecoratedResource>
-  (data: T, store: any): Promise<IWritable<D>> {
+  (data: T, store: any): Promise<IWritable> {
   let keys: string[]
   let ModelImpl = null
 
@@ -57,7 +57,7 @@ export default async function decorate<T extends IResource, D extends DecoratedR
     keys = resourceKeys
   }
 
-  const out: IWritable<D> = <any>reactive(data)
+  const out: IWritable = <any>reactive(data)
 
   for (const k of keys) {
     let alsoInModel = false

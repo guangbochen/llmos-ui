@@ -41,20 +41,24 @@ export interface IMetadata {
   resourceVersion?: string
   selfLink?: string
   uid?: string
-  state?: IModelState
+  state?: ITypeState
 }
 
-export interface IModelState {
+export interface ITypeState {
   name: string
+  message: string
   error: boolean
   transitioning: boolean
-  message: string
 }
 
 export interface IRelationship {
-  fromId: string
-  fromType: string
+  fromId?: string
+  fromType?: string
   rel: string
+  state: string
+  message?: string
+  toId?: string
+  toType?: string
 }
 
 export interface IResource {
